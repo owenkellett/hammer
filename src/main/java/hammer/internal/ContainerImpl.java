@@ -123,6 +123,23 @@ class ContainerImpl implements Container {
     }
 
     @Override
+    public MultiBinder allowMultiBindings() {
+        verifyActive();
+        
+        throw new UnsupportedOperationException("Not supported yet.");
+        //this.multiBindingsEnabled = true;
+        //return null;
+    }
+
+    @Override
+    public void allowFreeBindings() {
+        verifyActive();
+        
+        throw new UnsupportedOperationException("Not supported yet.");
+        //this.freeBindingsEnabled = true;
+    }
+
+    @Override
     public void allowInjections(InjectionType... injections) {
         verifyActive();
         
@@ -181,6 +198,26 @@ class ContainerImpl implements Container {
             complete = true;
             return binding;
         }
+
+        @Override
+        public FreeBinder<T> asFreeBinding() {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public MapMemberBinder<T> asMapMemberBinding() {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public ListMemberBinder<T> asListMemberBinding() {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public SetMemberBinder<T> asSetMemberBinding() {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
         
         private void verifyNotComplete() {
             if (complete) {
@@ -212,6 +249,26 @@ class ContainerImpl implements Container {
             strictBindings.add(binding);
             complete = true;
             return binding;
+        }
+
+        @Override
+        public FreeBinder<T> asFreeBinding() {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public MapMemberBinder<T> asMapMemberBinding() {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public ListMemberBinder<T> asListMemberBinding() {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public SetMemberBinder<T> asSetMemberBinding() {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
         
         private void verifyNotComplete() {
