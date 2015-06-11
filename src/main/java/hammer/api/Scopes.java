@@ -39,11 +39,6 @@ public class Scopes {
     public static Singleton SINGLETON = new SingletonImpl();
     
     /**
-     * An instance of the {@link Multiton} scope.
-     */
-    public static Multiton MULTITON = new MultitonImpl();
-    
-    /**
      * Creates an instance of an annotation that is annotated with {@link Scope}.
      * This is a convenience method and can only be used for simple annotations that do
      * not declare any elements.
@@ -110,12 +105,6 @@ public class Scopes {
     private static class SingletonImpl extends SimpleAnnotation implements Singleton {
         private SingletonImpl() {
             super(Singleton.class);
-        }
-    }
-    
-    private static class MultitonImpl extends SimpleAnnotation implements Multiton {
-        private MultitonImpl() {
-            super(Multiton.class);
         }
     }
 }

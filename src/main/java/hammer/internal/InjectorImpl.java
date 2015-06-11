@@ -79,7 +79,6 @@ class InjectorImpl implements Injector {
         this.accessProfile = Introspector.getAccessProfile(injectionTypes);
         this.activeScopes = new HashSet<>();
         this.activeScopes.add(Scopes.SINGLETON);
-        this.activeScopes.add(Scopes.MULTITON);
 
         // for each strictbinding, create injectionprovider and associate
         // with each injectionrequest
@@ -275,11 +274,6 @@ class InjectorImpl implements Injector {
     @Override
     public boolean isSupported(InjectionType type) {
         return injectionTypes.contains(type);
-    }
-
-    @Override
-    public Injector enterScope(Class<? extends Annotation> scope) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     

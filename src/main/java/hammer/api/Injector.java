@@ -81,20 +81,13 @@ public interface Injector {
     /**
      * The set of {@code @Scope}s that this {@link Injector} instance honors.  For every
      * {@code @Scope} annotation in this set, all injections by this {@link Injector} for
-     * a type with said annotation will have one of two behaviors:
+     * a type with said annotation will have one behavior:
      * <ol>
-     * <li>If the {@code Scope} annotation is also annotated with {@link Multiton}, all
-     *     injections by this injector for a type annotated will return a unique instance
-     *     <em>per {@code Qualifier}</em> annotation associated with the injection
-     *     request.  Thus two requests for the type with the same {@code Qualifier} will
-     *     inject the same instance, but two requests for the type with different
-     *     {@code Qualifiers} will return different instances.</li>
-     * <li>If the {@code Scope} annotation is NOT also annotated with {@link Multiton},
-     *     all injections by this injector for a type annotated with the scope will
+     * <li>All injections by this injector for a type annotated with the scope will
      *     inject the same instance (behaves as a {@code @Singleton}).</li>
      * </ol>
-     * As a rule, this method always returns a set of at least size two where
-     * {@code @Singleton} and {@link Multiton} are always included.
+     * As a rule, this method always returns a set of at least size one where
+     * {@code @Singleton} is always included.
      * 
      * @return the {@code Scope}s active for this {@link Injector}
      */
@@ -141,17 +134,5 @@ public interface Injector {
      * @return {@code true} if this Injector supports the given injection type
      */
     boolean isSupported(InjectionType type);
-    
-    /**
-     * Create a new child {@link Injector} with the given scope activated.  The
-     * resulting child {@link Injector} will delegate all injection requests to the
-     * parent injector with the exception of requests with the given scope.
-     * 
-     * @param scope the new scope to activate in the new {@link Injector}
-     * @return a new {@link Injector} with the given scope activated
-     * @throws IllegalArgumentException if the requested scope annotation is not annotated
-     *                                  with {@code @Scope}
-     */
-    Injector enterScope(Class<? extends Annotation> scope);
     
 }
