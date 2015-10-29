@@ -15,7 +15,6 @@
  */
 package hammer.internal;
 
-import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -26,7 +25,7 @@ import java.util.Set;
 import hammer.api.Container;
 import hammer.api.InjectionType;
 import hammer.api.TypeToken;
-import javax.inject.Scope;
+import java.util.Iterator;
 
 /**
  *
@@ -137,7 +136,25 @@ class ContainerImpl implements Container {
     public void configureStaticInjections(Class<?> type) {
         verifyActive();
         
-        staticInjectionsEnabled.add(type);
+        // ensure that if multiple implementations from the same class hierarchy are
+        // configured for static injection, only the youngest ancestor is included so as
+        // to avoid multiple injections
+        Iterator<Class<?>> enabled = staticInjectionsEnabled.iterator();
+        boolean addType = true;
+        while (enabled.hasNext()) {
+            Class<?> enabledType = enabled.next();
+            if (enabledType.isAssignableFrom(type)) {
+                enabled.remove();
+            }
+            
+            if (type.isAssignableFrom(enabledType)) {
+                addType = false;
+            }
+        }
+        
+        if (addType) {
+            staticInjectionsEnabled.add(type);
+        }
     }
     
     Result unload() {
