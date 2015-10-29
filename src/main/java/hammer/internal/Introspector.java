@@ -28,9 +28,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 
+import javax.inject.Inject;
+
 import hammer.api.InjectionType;
 import hammer.api.TypeToken;
-import javax.inject.Inject;
+
 
 /**
  * Utilities for introspection on classes in order to extract injection configuration.

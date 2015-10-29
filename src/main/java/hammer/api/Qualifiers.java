@@ -19,7 +19,6 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.util.Objects;
 import javax.inject.Named;
 import javax.inject.Qualifier;
 

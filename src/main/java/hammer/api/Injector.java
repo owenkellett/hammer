@@ -23,8 +23,7 @@ import javax.inject.Provider;
 /**
  * An {@link Injector} is a JSR-330 compliant dependency injection container.
  * {@link Injector} containers support all standard JSR-330 dependency injection
- * techniques.  In addition, {@link Injector}s support arbitrarily deep custom
- * {@code @Scope} levels.
+ * techniques.
  */
 public interface Injector {
 
@@ -32,7 +31,7 @@ public interface Injector {
      * Retrieve an instance of the target type from the container.  This method may
      * create a new instance or return an existing instance of the requested type
      * depending on the configured {@code Scope} of the type as well as the contextual
-     * {@code Scope} stack of this {@link Injector} instance.
+     * active {@code Scope}s of this {@link Injector} instance.
      * 
      * @param <T> the type of the returned object
      * @param target the target class type of the returned object
@@ -45,7 +44,7 @@ public interface Injector {
      * Retrieve an instance of the target type from the container.  This method may
      * create a new instance or return an existing instance of the requested type
      * depending on the configured {@code Scope} of the type as well as the contextual
-     * {@code Scope} stack of this {@link Injector} instance.
+     * active {@code Scope}s of this {@link Injector} instance.
      * 
      * @param <T> the type of the returned object
      * @param target the target class type of the returned object

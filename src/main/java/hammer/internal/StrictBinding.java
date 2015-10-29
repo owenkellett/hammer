@@ -15,7 +15,6 @@
  */
 package hammer.internal;
 
-import hammer.api.TypeToken;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
@@ -25,6 +24,7 @@ import java.util.Objects;
 
 import hammer.api.Container.QualifierBinder;
 import hammer.api.Container.StrictBinder;
+import hammer.api.TypeToken;
 
 
 /**

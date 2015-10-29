@@ -16,32 +16,31 @@
 package hammer.internal;
 
 import java.lang.annotation.Annotation;
-import java.util.Map;
-import java.util.Set;
-
-import hammer.api.InjectionType;
-import hammer.api.Injector;
-import hammer.api.Loader;
-import hammer.api.TypeToken;
-
+import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-
-import hammer.api.Scopes;
-import java.lang.reflect.AccessibleObject;
-import java.util.Collections;
 import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+
 import javax.inject.Provider;
 import javax.inject.Qualifier;
 import javax.inject.Scope;
+
+import hammer.api.Scopes;
+import hammer.api.InjectionType;
+import hammer.api.Injector;
+import hammer.api.Loader;
+import hammer.api.TypeToken;
 
 /**
  *

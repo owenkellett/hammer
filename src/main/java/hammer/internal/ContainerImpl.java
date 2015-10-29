@@ -18,6 +18,7 @@ package hammer.internal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -25,7 +26,6 @@ import java.util.Set;
 import hammer.api.Container;
 import hammer.api.InjectionType;
 import hammer.api.TypeToken;
-import java.util.Iterator;
 
 /**
  *
