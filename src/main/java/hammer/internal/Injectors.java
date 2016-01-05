@@ -22,7 +22,7 @@ import hammer.api.Injector;
 import hammer.api.Loader;
 
 /**
- *
+ * The entry point into the implementation for acquiring Injector instances.
  */
 public class Injectors {
 

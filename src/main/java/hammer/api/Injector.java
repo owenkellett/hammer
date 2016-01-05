@@ -21,8 +21,8 @@ import java.util.Set;
 import javax.inject.Provider;
 
 /**
- * An {@link Injector} is a JSR-330 compliant dependency injection container.
- * {@link Injector} containers support all standard JSR-330 dependency injection
+ * An {@link Injector} is a JSR-330 compliant dependency injection tool.
+ * {@link Injector}s support all standard JSR-330 dependency injection
  * techniques.
  */
 public interface Injector {
@@ -80,13 +80,20 @@ public interface Injector {
     /**
      * The set of {@code @Scope}s that this {@link Injector} instance honors.  For every
      * {@code @Scope} annotation in this set, all injections by this {@link Injector} for
-     * a type with said annotation will have one behavior:
+     * a type with said annotation will have one of two behaviors:
      * <ol>
-     * <li>All injections by this injector for a type annotated with the scope will
+     * <li>If the {@code Scope} annotation is also annotated with {@link Multiton}, all
+     *     injections by this injector for a type annotated will return a unique instance
+     *     <em>per {@code Qualifier}</em> annotation associated with the injection
+     *     request.  Thus two requests for the type with the same {@code Qualifier} will
+     *     inject the same instance, but two requests for the type with different
+     *     {@code Qualifiers} will return different instances.</li>
+     * <li>If the {@code Scope} annotation is NOT also annotated with {@link Multiton},
+     *     all injections by this injector for a type annotated with the scope will
      *     inject the same instance (behaves as a {@code @Singleton}).</li>
      * </ol>
-     * As a rule, this method always returns a set of at least size one where
-     * {@code @Singleton} is always included.
+     * As a rule, this method always returns a set of at least size two where
+     * {@code @Singleton} and {@link Multiton} are always included.
      * 
      * @return the {@code Scope}s active for this {@link Injector}
      */
@@ -101,10 +108,13 @@ public interface Injector {
      * called automatically for any instance created by this {@link Injector} if member 
      * {@link InjectionType}s are configured.  Thus in most cases, it is only necessary to 
      * use for objects that you instantiate yourself.
+     * <p>
+     * Note: If this {@link Injector} is not configured for either public or non public
+     * member {@link InjectionType}s, this method will silently have no effect.
      * 
      * @param target the object to inject
-     * @throws IllegalStateException if this {@link Injector} is not configured for either
-     *                               public or non public member {@link InjectionType}s
+     * @throws IllegalArgumentException if the target object is of a type unknown to the
+     *                                  injector
      */
     void injectMembers(Object target);
     
@@ -118,10 +128,13 @@ public interface Injector {
      * {@link Injector} creation time if static field {@link InjectionType}s are
      * configured.  Thus in most cases, it is only necessary to use for objects that you
      * instantiate yourself.
+     * <p>
+     * Note: If this {@link Injector} is not configured for either public or non public
+     * static {@link InjectionType}s, this method will silently have no effect.
      * 
      * @param targetClass the class type to inject
-     * @throws IllegalStateException if this {@link Injector} is not configured for either
-     *                               public or non public static {@link InjectionType}s
+     * @throws IllegalArgumentException if the target object is of a type unknown to the
+     *                                  injector
      */
     void injectStatics(Class<?> targetClass);
     
@@ -133,5 +146,17 @@ public interface Injector {
      * @return {@code true} if this Injector supports the given injection type
      */
     boolean isSupported(InjectionType type);
+    
+    /**
+     * Create a new child {@link Injector} with the given scope activated.  The
+     * resulting child {@link Injector} will delegate all injection requests to the
+     * parent injector with the exception of requests with the given scope.
+     * 
+     * @param scope the new scope to activate in the new {@link Injector}
+     * @return a new {@link Injector} with the given scope activated
+     * @throws IllegalArgumentException if the requested scope annotation is not annotated
+     *                                  with {@code @Scope}
+     */
+    Injector enterScope(Class<? extends Annotation> scope);
     
 }

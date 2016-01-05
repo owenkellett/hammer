@@ -17,6 +17,7 @@ package hammer.api;
 
 /**
  * An enumeration of the supported injection types by {@code Injector}s.
+ * @see Container#allowInjections(hammer.api.InjectionType...)
  */
 public enum InjectionType {
 

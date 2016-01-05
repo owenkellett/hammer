@@ -15,6 +15,7 @@
  */
 package hammer.internal;
 
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -25,7 +26,9 @@ import java.util.Set;
 
 import hammer.api.Container;
 import hammer.api.InjectionType;
+import hammer.api.Scopes;
 import hammer.api.TypeToken;
+import javax.inject.Scope;
 
 /**
  *
@@ -58,6 +61,11 @@ class ContainerImpl implements Container {
     private final Set<InjectionType> injectionTypes;
     
     /**
+     * The set of scopes that are configured as active for this container.
+     */
+    private final Set<Annotation> activeScopes;
+    
+    /**
      * The set of classes for which static injections will be performed.
      */
     private final Set<Class<?>> staticInjectionsEnabled;
@@ -77,6 +85,21 @@ class ContainerImpl implements Container {
      */
     private final List<StrictBinding<?>> strictBindings;
     
+    /**
+     * The list of map bindings added to this container.
+     */
+    private final List<MapBinding<?>> mapBindings;
+    
+    /**
+     * The list of list bindings added to this container.
+     */
+    private final List<ListBinding<?>> listBindings;
+    
+    /**
+     * The list of set bindings added to this container.
+     */
+    private final List<SetBinding<?>> setBindings;
+    
     ContainerImpl() {
         active = true;
         multiBindingsEnabled = false;
@@ -84,10 +107,16 @@ class ContainerImpl implements Container {
         injectionTypesReset = false;
         injectionTypes = new HashSet<>();
         injectionTypes.addAll(Arrays.asList(InjectionType.values()));
+        activeScopes = new HashSet<>();
+        activeScopes.add(Scopes.SINGLETON);
+        activeScopes.add(Scopes.MULTITON);
         staticInjectionsEnabled = new HashSet<>();
         typeBindingInvocations = new ArrayList<>();
         instanceBindingInvocations = new ArrayList<>();
         strictBindings = new ArrayList<>();
+        mapBindings = new ArrayList<>();
+        listBindings = new ArrayList<>();
+        setBindings = new ArrayList<>();
     }
     
     /** === Container implementation === **/
@@ -130,6 +159,18 @@ class ContainerImpl implements Container {
         }
         injectionTypes.addAll(Arrays.asList(injections));
         this.injectionTypesReset = true;
+    }
+
+    @Override
+    public void activateScopes(Class<? extends Annotation>... scopes) {
+        for (Class<? extends Annotation> s : scopes) {
+            if (s.getAnnotation(Scope.class) == null) {
+                throw new IllegalArgumentException("Scope annotation " + s + 
+                                                   " must be annotated with @Scope");
+            }
+            
+            activeScopes.add(Scopes.scope(s));
+        }
     }
 
     @Override
@@ -198,6 +239,53 @@ class ContainerImpl implements Container {
             complete = true;
             return binding;
         }
+
+        @Override
+        public MapMemberBinder<T> asMapMemberBinding() {
+            return asMapMemberBinding(null);
+        }
+
+        @Override
+        public MapMemberBinder<T> asMapMemberBinding(Annotation scope) {
+            verifyNotComplete();
+            Annotations.requireScope(scope);
+            MapBinding<T> binding = new MapBinding<>(type, scope);
+            mapBindings.add(binding);
+            complete = true;
+            return binding;
+        }
+
+        @Override
+        public ListMemberBinder<T> asListMemberBinding() {
+            return asListMemberBinding(null);
+        }
+
+        @Override
+        public ListMemberBinder<T> asListMemberBinding(Annotation scope) {
+            verifyNotComplete();
+            Annotations.requireScope(scope);
+            ListBinding<T> binding = new ListBinding<>(type, scope);
+            listBindings.add(binding);
+            complete = true;
+            return binding;
+        }
+
+        @Override
+        public SetMemberBinder<T> asSetMemberBinding() {
+            return asSetMemberBinding(null);
+        }
+
+        @Override
+        public SetMemberBinder<T> asSetMemberBinding(Annotation scope) {
+            verifyNotComplete();
+            Annotations.requireScope(scope);
+            SetBinding<T> binding = new SetBinding<>(type, scope);
+            setBindings.add(binding);
+            complete = true;
+            return binding;
+        }
+
+        
         
         private void verifyNotComplete() {
             if (complete) {
@@ -207,7 +295,8 @@ class ContainerImpl implements Container {
         
         private void verifyComplete() {
             if (!complete) {
-                throw new IllegalStateException("BindingInvocation for type " + type + " not complete");
+                throw new IllegalStateException("BindingInvocation for type " + type + 
+                                                " not complete");
             }
         }
         
@@ -230,6 +319,53 @@ class ContainerImpl implements Container {
             complete = true;
             return binding;
         }
+
+        @Override
+        public MapMemberBinder<T> asMapMemberBinding() {
+            return asMapMemberBinding(null);
+        }
+
+        @Override
+        public MapMemberBinder<T> asMapMemberBinding(Annotation scope) {
+            verifyNotComplete();
+            Annotations.requireScope(scope);
+            MapBinding<T> binding = new MapBinding<>(instance, scope);
+            mapBindings.add(binding);
+            complete = true;
+            return binding;
+        }
+
+        @Override
+        public ListMemberBinder<T> asListMemberBinding() {
+            return asListMemberBinding(null);
+        }
+
+        @Override
+        public ListMemberBinder<T> asListMemberBinding(Annotation scope) {
+            verifyNotComplete();
+            Annotations.requireScope(scope);
+            ListBinding<T> binding = new ListBinding<>(instance, scope);
+            listBindings.add(binding);
+            complete = true;
+            return binding;
+        }
+
+        @Override
+        public SetMemberBinder<T> asSetMemberBinding() {
+            return asSetMemberBinding(null);
+        }
+
+        @Override
+        public SetMemberBinder<T> asSetMemberBinding(Annotation scope) {
+            verifyNotComplete();
+            Annotations.requireScope(scope);
+            SetBinding<T> binding = new SetBinding<>(instance, scope);
+            setBindings.add(binding);
+            complete = true;
+            return binding;
+        }
+
+        
         
         private void verifyNotComplete() {
             if (complete) {
@@ -254,12 +390,28 @@ class ContainerImpl implements Container {
             return injectionTypes;
         }
         
+        Set<Annotation> getActiveScopes() {
+            return activeScopes;
+        }
+        
         Set<Class<?>> getStaticInjectionsEnabled() {
             return staticInjectionsEnabled;
         }
         
         List<StrictBinding<?>> getStrictBindings() {
             return strictBindings;
+        }
+        
+        List<MapBinding<?>> getMapBindings() {
+            return mapBindings;
+        }
+        
+        List<ListBinding<?>> getListBindings() {
+            return listBindings;
+        }
+        
+        List<SetBinding<?>> getSetBindings() {
+            return setBindings;
         }
     }
 

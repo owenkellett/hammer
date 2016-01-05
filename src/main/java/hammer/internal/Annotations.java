@@ -34,8 +34,11 @@ class Annotations {
      *                                  {@code Qualifier}
      */
     static void requireQualifier(Annotation annotation) {
-        Objects.requireNonNull(annotation.annotationType().getAnnotation(Qualifier.class),
-                               "Annotation must be annotated with @Qualifier");
+        if (annotation != null) {
+            Objects.requireNonNull(
+                    annotation.annotationType().getAnnotation(Qualifier.class),
+                    "Annotation must be annotated with @Qualifier");
+        }
     }
     
     /**
@@ -46,7 +49,10 @@ class Annotations {
      *                                  {@code Scope}
      */
     static void requireScope(Annotation annotation) {
-        Objects.requireNonNull(annotation.annotationType().getAnnotation(Scope.class),
-                               "Annotation must be annotated with @Scope");
+        if (annotation != null) {
+            Objects.requireNonNull(
+                    annotation.annotationType().getAnnotation(Scope.class),
+                    "Annotation must be annotated with @Scope");
+        }
     }
 }

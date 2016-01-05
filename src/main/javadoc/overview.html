@@ -3,19 +3,184 @@
         <title>Hammer Framework</title>
     </head>
     <body>
-        <h2>Hammer Framework</h2>
+        <h1>Overview</h1>
         
-        <p>The Hammer Framework is a JSR-330 compliant dependency injection framework.</p>
+        <p>The <b>Hammer Framework</b> is a fully compliant JSR-330 dependency
+            injection implementation.  It is a lighter weight alternative to other
+            popular JSR-330 implementations such as Guice, Spring, HK2, and others.
+            In addition to its leaner API and simpler configuration, it has a smaller
+            runtime footprint of most of the alternatives and a faster
+            runtime bootstrapping time.
+        </p>
+        <!-- and some unique features for injecting multiple implementations of the
+            same interface. (forthcoming) -->
         
-        <h3>Features</h3>
+        <h1>Features</h1>
 
         <ul>
-            <li>Fully compliant JSR-330 implementation supporting all specified features</li>
+            <li>Fully compliant JSR-330 implementation supporting 
+                <a href="https://atinject.googlecode.com/svn/trunk/javadoc/index.html">
+                    the full specification</a></li>
+            <li>Passes the official JSR-330 TCK</li>
             <li>Lean and compact API surface</li>
-            <li>Supports enforcement of restricted injection types (i.e. you can construct a
-                "pure" dependency injection container that only supports constructor injection
-                which is enforced at container boot time)</li>
+            <li>Can enforce restricted {@link hammer.api.InjectionType injection types}
+                (e.g. only public constructor injection)</li>
+            <li>Supports custom Scopes that can be entered/exited</li>
+            <li>First class citizen support of injecting collection types</li>
         </ul>
+        
+        <h1>Usage</h1>
+        
+        <h2>Basic Injection</h2>
+        
+        <p>The {@link hammer.api.Injector Injector} is the main dependency injection
+            interface for the hammer framework.  In order to acquire an instance of an
+            {@code Injector}, a single {@link hammer.api.Container Container} instance
+            is configured and manipulated using one or more 
+            {@link hammer.api.Loader Loader} implementations.  This all happens in the
+            context of a call to one of the static 
+            {@link hammer.api.Hammer Hammer.createInjector} methods which returns a fully
+            configured and ready to use {@code Injector}.
+        </p>
+        
+        <p>The {@link hammer.api.Container Container} is configured by adding injectable
+            concrete classes (or fully instantiated instances) via the {@code addImpl} or
+            {@code addInstance} methods.  These calls can then be further configured to
+            indicate under what conditions the configured injectable class will be
+            injected (i.e. for what types and qualifiers).  For example, consider the
+            following concrete class which is legally injectable according to the
+            rules of the
+            <a href="https://atinject.googlecode.com/svn/trunk/javadoc/index.html">
+                JSR-330 specification</a>:
+        </p>
+                
+        <pre>
+  public class GameService implements Service {
+    private final Handicapper handicapper;
+
+    &#064;Inject
+    GameService(Handicapper handicapper) {
+      this.handicapper = handicapper;
+    }
+
+    public Game startGame(Player... players) {
+      ...
+    }
+
+    &#064;Override
+    public void start() { ... }
+
+    &#064;Override
+    public void stop() { ... }
+  }
+        </pre>
+        
+        <h3>Injectable Value (via concrete class type, no qualifier)</h3>
+        
+        <p>In order to inject a {@code GameService}, it must be added to the
+            {@code Container} using a {@code Loader}.  Since it also depends on 
+            a {@code Handicapper}, an implementation of that type must also be added to
+            the container:
+        </p>
+        
+        <pre>
+  public class GameLoader implements Loader {
+    &#064;Override
+    public void load(Container container) {
+      // configure the GameService to be injected for requests of its own type
+      container.addImplType(GameService.class)
+               .asStrictBinding()
+               .forItself();
+
+      // configure a FairHandicapper to be injected for requests of a Handicapper
+      container.addImplType(FairHandicapper.class)
+               .asStrictBinding()
+               .forSpecificTypes(Handicapper.class);
+    }
+  });
+        </pre>
+        
+        <p>Using the above {@code Loader}, an {@code Injector} can be created and used
+            to acquire an instance of {@code GameService}:
+        </p>
+        
+        <pre>
+  public static void main(String[] args) {
+
+    // configure the container and create the injector
+    Injector injector = Hammer.createInjector(new GameLoader());
+
+    // get an instance of GameService
+    GameService gs = injector.getInstance(GameService.class);
+  }
+        </pre>
+        
+        <h3>Injectable Value (via interface type, no qualifier)</h3>
+        
+        <p>Notice that the {@code GameService} is injected "forItself" in the above
+            {@code Loader}.  Rather than configuring the injector to inject it for
+            requests of its own type, you can also configure the {@code GameService} to
+            be injected for requests of {@code Service} instances:
+        </p>
+        
+        <pre>
+  container.addImplType(GameService.class).asStrictBinding().forSpecificTypes(Service.class);
+        </pre>
+        
+        <p>Now injection requests for an instance of {@code Service} will return a
+            {@code GameService}.
+        </p>
+        
+        <pre>
+  // will be an instance of GameService
+  Service gs = injector.getInstance(Service.class);
+        </pre>
+        
+        <h3>Injectable Value (via either class or interface type with qualifier)</h3>
+        
+        <p>Injections using qualifiers are fully supported with hammer.  In order to
+            configure an injection request to be associated with a specific qualifier,
+            use the {@code whenQualifiedBy} method that is fluently available when
+            setting up strict bindings:
+        </p>
+        
+        <pre>
+  // configure a FairHandicapper to be injected for requests of a Handicapper
+  // that are qualified with an @Named("fair") qualifier annotation
+  container.addImplType(FairHandicapper.class)
+           .asStrictBinding()
+           .forSpecificTypes(Handicapper.class)
+           .whenQualifiedWith(Qualifiers.named("fair"));
+        </pre>
+        
+        <h3>Injecting Parameterized Types</h3>
+        
+        <p>Configuring parameterized types is supported by using the
+            {@link hammer.api.TypeToken} class available in the API.  For example:
+        </p>
+        
+        <pre>
+  container.addImplType(MyIntegerSet.class)
+           .asStrictBinding()
+           .forSpecificTypes(new TypeToken&#060;Set&#060;Integer&#062;&#062;() {});
+        </pre>
+        
+        <h2>Static Injection</h2>
+
+        <p>Static injection is supported at {@code Injector} creation time via calls to
+            the {@link hammer.api.Container#configureStaticInjections} method.
+        </p>
+        
+        <h2>Collection Injection</h2>
+        
+        <p>See the {@link hammer.api.Container} class and its nested classes
+            for more details on collection injection.</p>
+        
+        <h2>Using Scopes</h2>
+        
+        <p>See the {@link hammer.api.Container#activateScopes} method and the
+            {@link hammer.api.Injector#enterScope} method for more details on
+            support for scopes.</p>
 
     </body>
 </html>

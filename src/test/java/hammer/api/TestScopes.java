@@ -35,6 +35,16 @@ public class TestScopes {
         Assert.assertEquals(Scopes.scope(Singleton.class), Scopes.SINGLETON);
     }
     
+    @Test
+    public void testMultitonEquality() throws Exception {
+        Multiton multiton = MultiAnnotated.class.getAnnotation(Multiton.class);
+
+        Assert.assertEquals(multiton, Scopes.MULTITON);
+        Assert.assertEquals(multiton, Scopes.scope(Multiton.class));
+        Assert.assertEquals(Scopes.MULTITON, Scopes.scope(Multiton.class));
+        Assert.assertEquals(Scopes.scope(Multiton.class), Scopes.MULTITON);
+    }
+    
     @Test(expected = IllegalArgumentException.class)
     public void testNoScope() throws Exception {
         Scopes.scope(Scope.class);
@@ -42,4 +52,7 @@ public class TestScopes {
     
     @Singleton
     public static class Annotated {}
+    
+    @Multiton
+    public static class MultiAnnotated {}
 }

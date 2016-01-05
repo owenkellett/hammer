@@ -27,8 +27,9 @@ import java.lang.reflect.WildcardType;
  * parameterized types.  As a declared abstract class, an instance of {@link TypeToken} by
  * definition, must be a subclass.  Subclasses have access to complete type information of
  * declared superclasses at runtime so the type of T of an instantiated {@link TypeToken}
- * is always reifiable.
- * 
+ * is always reifiable.  Typical usage of this class involves instantiating an
+ * anonymous subclass, i.e. ({@code new TypeToken<Set<Integer>>() {}})
+ * <p>
  * A {@link TypeToken} can be instantiated for any type bound to T with the following
  * exceptions:
  * <ul>

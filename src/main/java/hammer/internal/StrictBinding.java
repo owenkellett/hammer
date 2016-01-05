@@ -15,12 +15,9 @@
  */
 package hammer.internal;
 
-
-import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 
 import hammer.api.Container.QualifierBinder;
 import hammer.api.Container.StrictBinder;
@@ -31,38 +28,28 @@ import hammer.api.TypeToken;
  * A {@link StrictBinding} defines the exact implementation class and {@code Scope} OR 
  * instance to be used for a specific declared type and optional {@code Qualifier}.
  */
-class StrictBinding<T> implements StrictBinder<T> {
+class StrictBinding<T> extends AbstractBinding<T> implements StrictBinder<T> {
 
-    private final TypeToken<T> implementation;
-    private final T instance;
-    
-    private List<TypeToken<?>> types = new ArrayList<>();
-    private Annotation qualifier;
-    
-    private boolean bound = false;
+    private final List<TypeToken<?>> types = new ArrayList<>();
     
     StrictBinding (TypeToken<T> implementation) {
-        Objects.requireNonNull(implementation);
-        this.implementation = implementation;
-        this.instance = null;
+        super(implementation);
     }
     
     StrictBinding (T instance) {
-        Objects.requireNonNull(instance);
-        this.implementation = null;
-        this.instance = instance;
+        super(instance);
     }
 
     @Override
     public QualifierBinder forItself() {
         verifyNotBound();
-        if (implementation != null) {
-            types.add(implementation);
+        if (getImplementation() != null) {
+            types.add(getImplementation());
         } else {
-            types.add(TypeToken.forClass(instance.getClass()));
+            types.add(TypeToken.forClass(getInstance().getClass()));
         }
-        bound = true;
-        return new QualifierBindingImpl();
+        completeBinding();
+        return getQualifierBinder();
     }
 
     @Override
@@ -71,75 +58,26 @@ class StrictBinding<T> implements StrictBinder<T> {
         for (Class<? super T> t : types) {
             this.types.add(TypeToken.forClass(t));
         }
-        bound = true;
-        return new QualifierBindingImpl();
+        completeBinding();
+        return getQualifierBinder();
     }
 
     @Override
     public QualifierBinder forSpecificTypes(TypeToken<? super T>... types) {
         verifyNotBound();
         this.types.addAll(Arrays.asList(types));
-        bound = true;
-        return new QualifierBindingImpl();
+        completeBinding();
+        return getQualifierBinder();
     }
-
-    TypeToken<T> getImplementation() {
-        return implementation;
-    }
-
-    T getInstance() {
-        return instance;
-    }
-    
-    
     
     List<InjectionRequest> getInjectionRequests() {
         verifyBound();
         List<InjectionRequest> requests = new ArrayList<>();
         for (TypeToken<?> t : types) {
-            requests.add(new InjectionRequest(t, qualifier));
+            requests.add(new InjectionRequest(t, getQualifier()));
         }
 
         return requests;
-    }
-    
-    private void verifyNotBound() {
-        if (bound) {
-            throw new IllegalStateException("Binding already set");
-        }
-    }
-    
-    private void verifyBound() {
-        if (!bound) {
-            if (instance != null) {
-                throw new IllegalStateException(
-                        "Binding not complete for instance of type " + 
-                        instance.getClass());
-            } else {
-                throw new IllegalStateException(
-                        "Binding not complete for impl type " + implementation);
-            }
-        }
-    }
-
-    
-    private class QualifierBindingImpl implements QualifierBinder {
-        
-        private boolean qualified = false;
-
-        @Override
-        public <Q extends Annotation> void whenQualifiedWith(Q qualifier) {
-            verifyNotQualified();
-            StrictBinding.this.qualifier = qualifier;
-            qualified = true;
-        }
-        
-        private void verifyNotQualified() {
-            if (qualified) {
-                throw new IllegalStateException("Qualifier already bound");
-            }
-        }
-        
     }
     
 }

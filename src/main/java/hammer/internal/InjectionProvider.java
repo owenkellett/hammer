@@ -15,14 +15,22 @@
  */
 package hammer.internal;
 
-import java.lang.annotation.Annotation;
-import java.util.Set;
-
 /**
- *
+ * An {@code InjectionProvider} provides instances of objects typically to serve
+ * {@link InjectionRequest}s.
  */
 interface InjectionProvider {
     
-    Object provide(Set<Annotation> activeScopes);
+    /**
+     * Provide an instance for an {@link InjectionRequest} according to the rules of this
+     * particular provider.  Depending on the implementation, multiple invocations of
+     * this method may or may not return the same instance.
+     * 
+     * @param request the {@link InjectionRequest} to satisfy
+     * @param activeScopes the list of active scopes that this provider should honor
+     *                     when returning instances
+     * @return an object of the appropriate type for this provider
+     */
+    Object provide(InjectionRequest request, InjectionContext context);
 
 }

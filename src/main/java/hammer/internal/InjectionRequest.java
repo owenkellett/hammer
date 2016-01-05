@@ -37,9 +37,7 @@ class InjectionRequest {
      */
     InjectionRequest(TypeToken<?> type, Annotation qualifier) {
         Objects.requireNonNull(type, "type cannot be null");
-        if (qualifier != null) {
-            Annotations.requireQualifier(qualifier);
-        }
+        Annotations.requireQualifier(qualifier);
         
         this.type = type;
         this.qualifier = qualifier;

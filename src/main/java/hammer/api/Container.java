@@ -70,6 +70,16 @@ public interface Container {
     void allowInjections(InjectionType... injections);
     
     /**
+     * Configure the given scopes to be activate in the booted {@link Injector}.  Note
+     * that this method is additive - the resulting {@link Injector}'s active scopes will
+     * be the union of all scopes provided in all calls to this method in addition to
+     * both the {@code Singleton} and {@link Multiton} scopes.
+     * 
+     * @param scopes the scopes to activate
+     */
+    void activateScopes(Class<? extends Annotation>... scopes);
+    
+    /**
      * Request that static field injection be performed on the given type upon
      * construction of the {@link Injector} container.
      * 
@@ -93,6 +103,75 @@ public interface Container {
          */
         StrictBinder<T> asStrictBinding();
         
+        /**
+         * Configure this type as a binding to a member of an injectable {@code Map}
+         * that is not bound to any scope.  The resulting injectable {@code Map} type
+         * will be treated as if the instantiated type is not annotated with any scope.
+         * <p>
+         * This call is equivalent to the call 
+         * {@link #asMapMemberBinding(java.lang.annotation.Annotation)
+         * asMapMemberBinding(null)}
+         * 
+         * @return a {@link MapMemberBinder} used to further configure the binding
+         */
+        MapMemberBinder<T> asMapMemberBinding();
+        
+        /**
+         * Configure this type as a binding to a member of an injectable {@code Map}
+         * that is bound to the given scope.  The will be treated as if  the instantiated
+         * type is annotated with the given scope.
+         * 
+         * @param scope the scope to bind the map type to
+         * @return a {@link MapMemberBinder} used to further configure the binding
+         */
+        MapMemberBinder<T> asMapMemberBinding(Annotation scope);
+        
+        /**
+         * Configure this type as a binding to a member of an injectable {@code List}
+         * that is not bound to any scope.  The resulting injectable {@code List} type
+         * will be treated as if the instantiated type is not annotated with any scope.
+         * <p>
+         * This call is equivalent to the call 
+         * {@link #asListMemberBinding(java.lang.annotation.Annotation)
+         * asListMemberBinding(null)}
+         * 
+         * @return a {@link ListMemberBinder} used to further configure the binding
+         */
+        ListMemberBinder<T> asListMemberBinding();
+        
+        /**
+         * Configure this type as a binding to a member of an injectable {@code List}
+         * that is bound to the given scope.  The will be treated as if  the instantiated
+         * type is annotated with the given scope.
+         * 
+         * @param scope the scope to bind the map type to
+         * @return a {@link ListMemberBinder} used to further configure the binding
+         */
+        ListMemberBinder<T> asListMemberBinding(Annotation scope);
+        
+        /**
+         * Configure this type as a binding to a member of an injectable {@code Set}
+         * that is not bound to any scope.  The resulting injectable {@code Set} type
+         * will be treated as if the instantiated type is not annotated with any scope.
+         * <p>
+         * This call is equivalent to the call 
+         * {@link #asSetMemberBinding(java.lang.annotation.Annotation)
+         * asSetMemberBinding(null)}
+         * 
+         * @return a {@link SetMemberBinder} used to further configure the binding
+         */
+        SetMemberBinder<T> asSetMemberBinding();
+        
+        /**
+         * Configure this type as a binding to a member of an injectable {@code Set}
+         * that is bound to the given scope.  The will be treated as if  the instantiated
+         * type is annotated with the given scope.
+         * 
+         * @param scope the scope to bind the map type to
+         * @return a {@link SetMemberBinder} used to further configure the binding
+         */
+        SetMemberBinder<T> asSetMemberBinding(Annotation scope);
+        
     }
 
     /**
@@ -109,7 +188,7 @@ public interface Container {
          * Binds the configured implementation type or instance to injection requests for
          * its own concrete type.  This is the default binding.
          * 
-         * @return an {@link QualifierBinder} used to further configure the binding
+         * @return a {@link QualifierBinder} used to further configure the binding
          */
         QualifierBinder forItself();
         
@@ -118,7 +197,7 @@ public interface Container {
          * the given specific injection types.
          * 
          * @param types the types to bind
-         * @return an {@link QualifierBinder} used to further configure the binding
+         * @return a {@link QualifierBinder} used to further configure the binding
          * @throws IllegalArgumentException if a supplied type conflicts with a previously
          *                                  bound type and multi bindings are NOT
          *                                  configured for that type
@@ -130,13 +209,124 @@ public interface Container {
          * the given specific injection types.
          * 
          * @param types the types to bind
-         * @return an {@link QualifierBinder} used to further configure the binding
+         * @return a {@link QualifierBinder} used to further configure the binding
          * @throws IllegalArgumentException if a supplied type conflicts with a previously
          *                                  bound type and multi bindings are NOT
          *                                  configured for that type
          */
         QualifierBinder forSpecificTypes(TypeToken<? super T>... types);
 
+    }
+    
+    /**
+     * A {@link MapMemberBinder} is a configuration entity used to used to configure the
+     * binding of an implementation type or instance that has been added to a
+     * {@link Container} and bind it as a value in an injectable {@code Map}.
+     * 
+     * @param <V> the type to configure
+     */
+    public interface MapMemberBinder<V> {
+        
+        /**
+         * Configures the injectable map type to use for the binding.
+         * 
+         * @param <K> the type of the key
+         * @param keyType the type of the key
+         * @param valueType the type of the value
+         * @return a {@link MapMemberKeyBinder} used to further configure the binding
+         */
+        <K> MapMemberKeyBinder<K> forMapType(Class<K> keyType, 
+                                             Class<? super V> valueType);
+        
+        /**
+         * Configures the injectable map type to use for the binding.
+         * 
+         * @param <K> the type of the key
+         * @param keyType the type of the key
+         * @param valueType the type of the value
+         * @return a {@link MapMemberKeyBinder} used to further configure the binding
+         */
+        <K> MapMemberKeyBinder<K> forMapType(TypeToken<K> keyType, 
+                                             TypeToken<? super V> valueType);
+        
+    }
+    
+    /**
+     * A {@link MapMemberKeyBinder} is a configuration entity used to used to configure
+     * the key to use for a specific implementation type or instance that has been added
+     * to a {@link Container} as a value in an injectable {@code Map}.
+     * 
+     * @param <K> the key type to configure
+     */
+    public interface MapMemberKeyBinder<K> {
+        
+        /**
+         * Binds the configured implementation type or instance to the map with the
+         * specific key value.
+         * 
+         * @param key the key value to use
+         * @return a {@link QualifierBinder} used to further configure the binding
+         */
+        QualifierBinder withKey(K key);
+        
+    }
+    
+    /**
+     * A {@link ListMemberBinder} is a configuration entity used to used to configure the
+     * binding of an implementation type or instance that has been added to a
+     * {@link Container} and bind it as a value in an injectable {@code List}.  The
+     * injected list will include elements in the order that they are added to this
+     * binder.  Note that this means if multiple {@link Loader}s are used to contribute to
+     * the list, the order in which the loaders are provided to the framework is
+     * important.
+     * 
+     * @param <T> the type to configure
+     */
+    public interface ListMemberBinder<T> {
+        
+        /**
+         * Configures the injectable list type to use for the binding.
+         * 
+         * @param elementType the type of the elements
+         * @return a {@link QualifierBinder} used to further configure the binding
+         */
+        QualifierBinder forElementType(Class<? super T> elementType);
+        
+        /**
+         * Configures the injectable list type to use for the binding.
+         * 
+         * @param elementType the type of the elements
+         * @return a {@link QualifierBinder} used to further configure the binding
+         */
+        QualifierBinder forElementType(TypeToken<? super T> elementType);
+        
+    }
+    
+    /**
+     * A {@link SetMemberBinder} is a configuration entity used to used to configure the
+     * binding of an implementation type or instance that has been added to a
+     * {@link Container} and bind it as a value in an injectable {@code Set}.
+     * 
+     * @param <T> the type to configure
+     */
+    public interface SetMemberBinder<T> {
+        
+        /**
+         * Configures the injectable set type to use for the binding.
+         * 
+         * @param elementType the type of the elements
+         * @return a {@link QualifierBinder} used to further configure the binding
+         */
+        QualifierBinder forElementType(Class<? super T> elementType);
+        
+        /**
+         * Configures the injectable set type to use for the binding.
+         * 
+         * @param elementType the type of the elements
+         * @return a {@link QualifierBinder} used to further configure the binding
+         */
+        QualifierBinder forElementType(TypeToken<? super T> elementType);
+        
     }
         
     /**
@@ -149,11 +339,8 @@ public interface Container {
         
         /**
          * Binds the configured implementation type or instance to a specific qualifier.
-         * By default a type or instance is automatically bound to a qualifier that its
-         * class is annotated with.  This method can be used if it is desirable to
-         * override that value or set one if there is none.  Note that this method binds
-         * the configured entity to a specific <em>instance</em> of a specific Qualifier
-         * annotation.
+         * Note that this method binds the configured entity to a specific
+         * <em>instance</em> of a specific Qualifier annotation.
          * 
          * @param <Q> the qualifier annotation type
          * @param qualifier the qualifier value
